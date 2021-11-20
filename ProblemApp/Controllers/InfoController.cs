@@ -12,7 +12,8 @@ public class InfoController : ControllerBase
     {
         return Ok(new
         {
-            ProcessId = Process.GetCurrentProcess().Id
+            ProcessId = Process.GetCurrentProcess().Id,
+            OSVersion = Environment.OSVersion.ToString()
         });
     }
 }

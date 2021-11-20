@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ProblemApp.Scripts;
-using static ProblemApp.Scripts.GarbageCollectionStressScript;
 
 namespace ProblemApp.Controllers;
 
@@ -16,10 +15,24 @@ public class ScriptsController : ControllerBase
     }
 
     [HttpPost("gc-stress")]
-    public async Task<IActionResult> StartGarbageCollectionStress(StartGarbageCollectionStressRequest request) =>
+    public async Task<IActionResult> StartGarbageCollectionStress(GarbageCollectionStressRequest request) =>
         Ok(await GarbageCollectionStressScript.Instance.StartAsync(request) ? "Started" : "Already started");
 
     [HttpDelete("gc-stress")]
     public async Task<IActionResult> StopGarbageCollectionStress() =>
         Ok(await GarbageCollectionStressScript.Instance.StopAsync() ? "Stopped" : "Already stopped");
+
+    [HttpPost("deadlock-with-threads")]
+    public async Task<IActionResult> ExecuteDeadlockWithThreads(DeadlockedWithThreadsRequest request)
+    {
+        await DeadlockedWithThreadsScript.Instance.StartAsync(request);
+        return Ok("Started");
+    }
+
+    [HttpPost("deadlock-with-tasks")]
+    public async Task<IActionResult> ExecuteDeadlockWithTasks(DeadlockedWithTasksRequest request)
+    {
+        await DeadlockedWithTasksScript.Instance.StartAsync(request);
+        return Ok("Done");
+    }
 }

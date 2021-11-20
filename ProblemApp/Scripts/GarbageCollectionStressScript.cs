@@ -1,16 +1,17 @@
 ﻿namespace ProblemApp.Scripts;
 
+public class GarbageCollectionStressRequest
+{
+    public long GarbageCollectionCallPeriodInMs { get; set; }
+    public int NumberOfObjects { get; set; }
+}
+
 /// <summary>
 /// https://www.youtube.com/watch?v=-qtT1wWJi3A
+/// https://twitter.com/maoni0/status/1461896972038656009
 /// </summary>
-public class GarbageCollectionStressScript
+public class GarbageCollectionStressScript : IScript<GarbageCollectionStressRequest>
 {
-    public class StartGarbageCollectionStressRequest
-    {
-        public long GarbafeCollectionCallPeriodInMs { get; set; }
-        public int NumberOfObjects { get; set; }
-    }
-
     private static readonly Lazy<GarbageCollectionStressScript> LazyInstance =
         new Lazy<GarbageCollectionStressScript>(() => new GarbageCollectionStressScript());
 
@@ -24,11 +25,11 @@ public class GarbageCollectionStressScript
 
     public static GarbageCollectionStressScript Instance => LazyInstance.Value;
 
-    public async Task<bool> StartAsync(StartGarbageCollectionStressRequest request)
+    public async Task<bool> StartAsync(GarbageCollectionStressRequest request)
     {
-        request.GarbafeCollectionCallPeriodInMs = request.GarbafeCollectionCallPeriodInMs == default
+        request.GarbageCollectionCallPeriodInMs = request.GarbageCollectionCallPeriodInMs == default
             ? 100
-            : request.GarbafeCollectionCallPeriodInMs;
+            : request.GarbageCollectionCallPeriodInMs;
         request.NumberOfObjects = request.NumberOfObjects == default
             ? 1024
             : request.NumberOfObjects;
@@ -53,7 +54,7 @@ public class GarbageCollectionStressScript
 
             _gcCollectionTask = Task.Run(async () =>
             {
-                var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(request.GarbafeCollectionCallPeriodInMs));
+                var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(request.GarbageCollectionCallPeriodInMs));
                 while(await timer.WaitForNextTickAsync(_gcStressCancellationTokenSource.Token))
                 {
                     GC.Collect();
