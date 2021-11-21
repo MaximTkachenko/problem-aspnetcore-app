@@ -1,21 +1,21 @@
-﻿namespace ProblemApp.Scripts;
+﻿using System.Collections.Concurrent;
 
-public class DeadlockedWithThreadsRequest
+namespace ProblemApp.Scripts;
+
+public class DeadlockOnThreadPoolRequest
 {
     public long LockTimeoutInMs { get; set; }
     public uint Count { get; set; }
-    public string ThreadNamePrefix { get; set; }
 }
 
-/// <summary>
-/// https://docs.microsoft.com/en-us/dotnet/core/diagnostics/debug-deadlock?tabs=windows
-/// </summary>
-public class DeadlockedWithThreadsScript : IStartOnlyScript<DeadlockedWithThreadsRequest>
+public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolRequest>
 {
     private readonly object _lockB = new object();
     private readonly object _lockA = new object();
 
-    public Task<bool> StartAsync(DeadlockedWithThreadsRequest request)
+    private ConcurrentBag<Task> _tasks = new ConcurrentBag<Task>();
+
+    public Task<bool> StartAsync(DeadlockOnThreadPoolRequest request)
     {
         request.LockTimeoutInMs = request.LockTimeoutInMs == default
             ? 30000
@@ -26,7 +26,7 @@ public class DeadlockedWithThreadsScript : IStartOnlyScript<DeadlockedWithThread
 
         for (var i = 0; i < request.Count; i++)
         {
-            Thread thread = new Thread(() =>
+            var task1 = Task.Run(() =>
             {
                 if (Monitor.TryEnter(_lockA))
                 {
@@ -52,10 +52,8 @@ public class DeadlockedWithThreadsScript : IStartOnlyScript<DeadlockedWithThread
                     }
                 }
             });
-            thread.Name = $"[{request.ThreadNamePrefix}] thread 1: locks A then B";
-            thread.Start();
 
-            thread = new Thread(() =>
+            var task2 = Task.Run(() =>
             {
                 if (Monitor.TryEnter(_lockB))
                 {
@@ -79,8 +77,9 @@ public class DeadlockedWithThreadsScript : IStartOnlyScript<DeadlockedWithThread
                     }
                 }
             });
-            thread.Name = $"[{request.ThreadNamePrefix}] thread 2: locks B then A";
-            thread.Start();
+
+            _tasks.Add(task1);
+            _tasks.Add(task2);
         }
 
         return Task.FromResult(true);

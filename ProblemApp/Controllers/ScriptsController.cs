@@ -8,31 +8,41 @@ namespace ProblemApp.Controllers;
 public class ScriptsController : ControllerBase
 {
     private readonly ILogger<ScriptsController> _logger;
+    private readonly GarbageCollectionStressScript _garbageCollectionStressScript;
+    private readonly DeadlockedWithThreadsScript _deadlockedWithThreadsScript;
+    private readonly DeadlockOnThreadPoolScript _deadlockOnThreadPoolScript;
 
-    public ScriptsController(ILogger<ScriptsController> logger)
+    public ScriptsController(ILogger<ScriptsController> logger,
+        GarbageCollectionStressScript garbageCollectionStressScript,
+        DeadlockedWithThreadsScript deadlockedWithThreadsScript,
+        DeadlockOnThreadPoolScript deadlockedWithTasksScript)
     {
         _logger = logger;
+        _garbageCollectionStressScript = garbageCollectionStressScript;
+        _deadlockedWithThreadsScript = deadlockedWithThreadsScript;
+        _deadlockOnThreadPoolScript = deadlockedWithTasksScript;
     }
 
     [HttpPost("gc-stress")]
     public async Task<IActionResult> StartGarbageCollectionStress(GarbageCollectionStressRequest request) =>
-        Ok(await GarbageCollectionStressScript.Instance.StartAsync(request) ? "Started" : "Already started");
+        Ok(await _garbageCollectionStressScript.StartAsync(request) ? "Started" : "Already started");
 
     [HttpDelete("gc-stress")]
     public async Task<IActionResult> StopGarbageCollectionStress() =>
-        Ok(await GarbageCollectionStressScript.Instance.StopAsync() ? "Stopped" : "Already stopped");
+        Ok(await _garbageCollectionStressScript.StopAsync() ? "Stopped" : "Already stopped");
 
-    [HttpPost("deadlock-with-threads")]
-    public async Task<IActionResult> ExecuteDeadlockWithThreads(DeadlockedWithThreadsRequest request)
+    [HttpPost("deadlock-on-threads")]
+    public async Task<IActionResult> ExecuteDeadlockOnThreads(DeadlockedWithThreadsRequest request)
     {
-        await DeadlockedWithThreadsScript.Instance.StartAsync(request);
+        request.ThreadNamePrefix = HttpContext.TraceIdentifier;
+        await _deadlockedWithThreadsScript.StartAsync(request);
         return Ok("Started");
     }
 
-    [HttpPost("deadlock-with-tasks")]
-    public async Task<IActionResult> ExecuteDeadlockWithTasks(DeadlockedWithTasksRequest request)
+    [HttpPost("deadlock-on-threadpool")]
+    public async Task<IActionResult> ExecuteDeadlockOnThreadPool(DeadlockOnThreadPoolRequest request)
     {
-        await DeadlockedWithTasksScript.Instance.StartAsync(request);
-        return Ok("Done");
+        await _deadlockOnThreadPoolScript.StartAsync(request);
+        return Ok("Started");
     }
 }

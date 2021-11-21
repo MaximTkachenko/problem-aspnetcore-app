@@ -12,18 +12,11 @@ public class GarbageCollectionStressRequest
 /// </summary>
 public class GarbageCollectionStressScript : IScript<GarbageCollectionStressRequest>
 {
-    private static readonly Lazy<GarbageCollectionStressScript> LazyInstance =
-        new Lazy<GarbageCollectionStressScript>(() => new GarbageCollectionStressScript());
-
     private readonly SemaphoreSlim _gcStressSemaphore = new SemaphoreSlim(1, 1);
     private Task _allocationTask;
     private Task _gcCollectionTask;
     private CancellationTokenSource _gcStressCancellationTokenSource;
     private object[] _objects;
-
-    private GarbageCollectionStressScript() { }
-
-    public static GarbageCollectionStressScript Instance => LazyInstance.Value;
 
     public async Task<bool> StartAsync(GarbageCollectionStressRequest request)
     {
