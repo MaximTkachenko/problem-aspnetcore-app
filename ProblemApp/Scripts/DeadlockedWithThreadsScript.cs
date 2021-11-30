@@ -38,8 +38,8 @@ public class DeadlockedWithThreadsScript : IStartOnlyScript<DeadlockedWithThread
                         {
                             try
                             {
-                            //actually nothing here
-                        }
+                                //actually nothing here
+                            }
                             finally
                             {
                                 Monitor.Exit(_lockB);
@@ -65,8 +65,8 @@ public class DeadlockedWithThreadsScript : IStartOnlyScript<DeadlockedWithThread
                         {
                             try
                             {
-                            //actually nothing here
-                        }
+                                //actually nothing here
+                            }
                             finally
                             {
                                 Monitor.Exit(_lockA);

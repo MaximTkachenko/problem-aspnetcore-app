@@ -38,8 +38,8 @@ public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolR
                         {
                             try
                             {
-                            //actually nothing here
-                        }
+                                //actually nothing here
+                            }
                             finally
                             {
                                 Monitor.Exit(_lockB);
@@ -63,8 +63,8 @@ public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolR
                         {
                             try
                             {
-                            //actually nothing here
-                        }
+                                //actually nothing here
+                            }
                             finally
                             {
                                 Monitor.Exit(_lockA);
