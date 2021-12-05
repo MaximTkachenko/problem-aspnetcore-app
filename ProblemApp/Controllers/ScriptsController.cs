@@ -11,16 +11,19 @@ public class ScriptsController : ControllerBase
     private readonly GarbageCollectionStressScript _garbageCollectionStressScript;
     private readonly DeadlockedWithThreadsScript _deadlockedWithThreadsScript;
     private readonly DeadlockOnThreadPoolScript _deadlockOnThreadPoolScript;
+    private readonly MemoryLeakScript _memoryLeakScript;
 
     public ScriptsController(ILogger<ScriptsController> logger,
         GarbageCollectionStressScript garbageCollectionStressScript,
         DeadlockedWithThreadsScript deadlockedWithThreadsScript,
-        DeadlockOnThreadPoolScript deadlockedWithTasksScript)
+        DeadlockOnThreadPoolScript deadlockedWithTasksScript,
+        MemoryLeakScript memoryLeakScript)
     {
         _logger = logger;
         _garbageCollectionStressScript = garbageCollectionStressScript;
         _deadlockedWithThreadsScript = deadlockedWithThreadsScript;
         _deadlockOnThreadPoolScript = deadlockedWithTasksScript;
+        _memoryLeakScript = memoryLeakScript;
     }
 
     [HttpPost("gc-stress")]
@@ -45,4 +48,12 @@ public class ScriptsController : ControllerBase
         await _deadlockOnThreadPoolScript.StartAsync(request);
         return Ok("Started");
     }
+
+    [HttpPost("memory-leak")]
+    public async Task<IActionResult> StartMemoryLeak(MemoryLeakScriptRequest request) =>
+        Ok(await _memoryLeakScript.StartAsync(request) ? "Started" : "Already started");
+
+    [HttpDelete("memory-leak")]
+    public async Task<IActionResult> StopMemoryLeak() =>
+        Ok(await _memoryLeakScript.StopAsync() ? "Stopped" : "Already stopped");
 }

@@ -12,8 +12,11 @@ public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolR
 {
     private readonly object _lockB = new object();
     private readonly object _lockA = new object();
-
     private ConcurrentBag<Task> _tasks = new ConcurrentBag<Task>();
+
+    public string Action => throw new NotImplementedException();
+
+    public string Description => throw new NotImplementedException();
 
     public Task<bool> StartAsync(DeadlockOnThreadPoolRequest request)
     {

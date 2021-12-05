@@ -18,6 +18,10 @@ public class GarbageCollectionStressScript : IScript<GarbageCollectionStressRequ
     private CancellationTokenSource _gcStressCancellationTokenSource;
     private object[] _objects;
 
+    public string Action => throw new NotImplementedException();
+
+    public string Description => throw new NotImplementedException();
+
     public async Task<bool> StartAsync(GarbageCollectionStressRequest request)
     {
         request.GarbageCollectionCallPeriodInMs = request.GarbageCollectionCallPeriodInMs == default

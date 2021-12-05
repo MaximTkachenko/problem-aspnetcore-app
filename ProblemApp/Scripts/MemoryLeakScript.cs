@@ -2,7 +2,7 @@
 
 public sealed class MemoryLeakScriptRequest
 {
-
+    public int NumberOfObjects { get; set; }
 }
 
 /// <summary>
@@ -12,15 +12,69 @@ public sealed class MemoryLeakScriptRequest
 public class MemoryLeakScript : IScript<MemoryLeakScriptRequest>
 {
     private readonly SemaphoreSlim _mlSemaphore = new SemaphoreSlim(1, 1);
+    private List<object[]> _objects;
+    private CancellationTokenSource _cancellationTokenSource;
+    private Task _leakTask;
 
-    public Task<bool> StartAsync(MemoryLeakScriptRequest requestToStart)
+    public string Action => throw new NotImplementedException();
+
+    public string Description => throw new NotImplementedException();
+
+    public async Task<bool> StartAsync(MemoryLeakScriptRequest requestToStart)
     {
+        requestToStart.NumberOfObjects = requestToStart.NumberOfObjects == default
+               ? 1024
+               : requestToStart.NumberOfObjects;
 
-        throw new NotImplementedException();
+        await _mlSemaphore.WaitAsync();
+
+        try
+        {
+            if (_objects != null) return false;
+
+            _objects = new List<object[]>();
+            _cancellationTokenSource = new CancellationTokenSource();
+            _leakTask = Task.Run(() =>
+            {
+                var rnd = new Random();
+                while (!_cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    int idx = rnd.Next(requestToStart.NumberOfObjects);
+                    _objects.Add(new object[rnd.Next(requestToStart.NumberOfObjects)]);
+                }
+            }, _cancellationTokenSource.Token);
+        }
+        finally
+        {
+            _mlSemaphore.Release();
+        }
+
+        return true;
     }
 
-    public Task<bool> StopAsync()
+    public async Task<bool> StopAsync()
     {
-        throw new NotImplementedException();
+        await _mlSemaphore.WaitAsync();
+        try
+        {
+            if (_objects == null) return false;
+
+            _cancellationTokenSource.Cancel();
+
+            try
+            {
+                await _leakTask;
+            }
+            catch (OperationCanceledException) { }
+
+            _objects = null;
+            _cancellationTokenSource = null;
+        }
+        finally
+        {
+            _mlSemaphore.Release();
+        }
+
+        return true;
     }
 }
