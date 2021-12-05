@@ -1,8 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -17,30 +15,6 @@ namespace ProblemApp.EndpointsGenerator
             var startOnlyScriptType = compilation.GetTypeByMetadataName("ProblemApp.Common.IStartOnlyScript`1");
             var scriptType = compilation.GetTypeByMetadataName("ProblemApp.Common.IScript`1");
 
-            var startOnlyScripts = new List<ITypeSymbol>();
-            var scripts = new List<ITypeSymbol>();
-
-            var aa = compilation.GetTypeByMetadataName("ProblemApp.Common.IStartOnlyScript`DeadlockOnThreadPoolRequest");
-
-            foreach (var syntaxTree in compilation.SyntaxTrees)
-            {
-                var semanticModel = compilation.GetSemanticModel(syntaxTree);
-
-                startOnlyScripts.AddRange(syntaxTree.GetRoot()
-                    .DescendantNodesAndSelf()
-                    .OfType<ClassDeclarationSyntax>()
-                    .Select(x => semanticModel.GetDeclaredSymbol(x))
-                    .OfType<ITypeSymbol>()
-                    .Where(x => x.AllInterfaces.Any(i => i.OriginalDefinition == startOnlyScriptType)));
-
-                scripts.AddRange(syntaxTree.GetRoot()
-                    .DescendantNodesAndSelf()
-                    .OfType<ClassDeclarationSyntax>()
-                    .Select(x => semanticModel.GetDeclaredSymbol(x))
-                    .OfType<ITypeSymbol>()
-                    .Where(x => x.AllInterfaces.Any(i => i.OriginalDefinition == scriptType)));
-            }
-
             var code = new StringBuilder(@"
 using System;
 using ProblemApp.Scripts;
@@ -51,34 +25,57 @@ namespace ProblemApp.Controllers
     public partial class ScriptsController
     {");
 
-            foreach (var startOnlyScript in startOnlyScripts)
+            foreach (var syntaxTree in compilation.SyntaxTrees)
             {
-                code.Append($@"
+                var semanticModel = compilation.GetSemanticModel(syntaxTree);
+
+                foreach(var startOnlyScript in syntaxTree.GetRoot()
+                    .DescendantNodesAndSelf()
+                    .OfType<ClassDeclarationSyntax>()
+                    .Select(x => semanticModel.GetDeclaredSymbol(x))
+                    .OfType<ITypeSymbol>()
+                    .Where(x => x.AllInterfaces.Any(i => i.OriginalDefinition == startOnlyScriptType)))
+                {
+                    code.Append($@"
+        /// <summary>
+        /// Executes {startOnlyScript.Name}.
+        /// </summary>
         [HttpPost({startOnlyScript.Name}.Action)]
         public async Task<IActionResult> Execute{startOnlyScript.Name}Async({startOnlyScript.AllInterfaces[0].TypeArguments[0].Name} request)
         {{
             await HttpContext.RequestServices.GetRequiredService<{startOnlyScript.Name}>().StartAsync(request);
             return Ok(""Started"");
         }}");
-            }
+                }
 
-            foreach (var script in scripts)
-            {
-                code.Append($@"
+                foreach(var script in syntaxTree.GetRoot()
+                    .DescendantNodesAndSelf()
+                    .OfType<ClassDeclarationSyntax>()
+                    .Select(x => semanticModel.GetDeclaredSymbol(x))
+                    .OfType<ITypeSymbol>()
+                    .Where(x => x.AllInterfaces.Any(i => i.OriginalDefinition == scriptType)))
+                {
+                    code.Append($@"
+        /// <summary>
+        /// Start {script.Name}.
+        /// </summary>
         [HttpPost({script.Name}.Action)]
         public async Task<IActionResult> Start{script.Name}Async({script.AllInterfaces[0].TypeArguments[0].Name} request)
         {{
             var started = await HttpContext.RequestServices.GetRequiredService<{script.Name}>().StartAsync(request);
             return Ok(started ? ""Started"" : ""Already started"");
         }}
+        /// <summary>
+        /// Stop {script.Name}.
+        /// </summary>
         [HttpDelete({script.Name}.Action)]
         public async Task<IActionResult> Stop{script.Name}Async()
         {{
             var stopped = await HttpContext.RequestServices.GetRequiredService<{script.Name}>().StopAsync();
             return Ok(stopped ? ""Stopped"" : ""Already stopped"");
         }}");
+                }
             }
-
             code.Append(@"
     }
 }");

@@ -7,13 +7,17 @@ namespace ProblemApp.Controllers;
 [Route("[controller]")]
 public class InfoController : ControllerBase
 {
+    /// <summary>
+    /// Get application info.
+    /// </summary>
     [HttpGet]
     public IActionResult Index()
     {
         return Ok(new
         {
             ProcessId = Process.GetCurrentProcess().Id,
-            OSVersion = Environment.OSVersion.ToString()
+            OSVersion = Environment.OSVersion.ToString(),
+            DotnetRuntimeVersion = Environment.Version.ToString()
         });
     }
 }
