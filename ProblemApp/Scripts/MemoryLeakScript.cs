@@ -18,9 +18,7 @@ public class MemoryLeakScript : IScript<MemoryLeakScriptRequest>
     private CancellationTokenSource _cancellationTokenSource;
     private Task _leakTask;
 
-    public string Action => throw new NotImplementedException();
-
-    public string Description => throw new NotImplementedException();
+    public const string Action = "memory-leak";
 
     public async Task<bool> StartAsync(MemoryLeakScriptRequest requestToStart)
     {
