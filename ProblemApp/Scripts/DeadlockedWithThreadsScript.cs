@@ -1,12 +1,9 @@
-﻿using ProblemApp.Common;
-
-namespace ProblemApp.Scripts;
+﻿namespace ProblemApp.Scripts;
 
 public class DeadlockedWithThreadsRequest
 {
     public long LockTimeoutInMs { get; set; }
     public uint Count { get; set; }
-    public string ThreadNamePrefix { get; set; }
 }
 
 /// <summary>
@@ -21,6 +18,8 @@ public class DeadlockedWithThreadsScript : IStartOnlyScript<DeadlockedWithThread
 
     public Task<bool> StartAsync(DeadlockedWithThreadsRequest request)
     {
+        var threadNamePrefix = Guid.NewGuid().ToString();
+
         request.LockTimeoutInMs = request.LockTimeoutInMs == default
             ? 30000
             : request.LockTimeoutInMs;
@@ -56,7 +55,7 @@ public class DeadlockedWithThreadsScript : IStartOnlyScript<DeadlockedWithThread
                     }
                 }
             });
-            thread.Name = $"[{request.ThreadNamePrefix}] thread 1: locks A then B";
+            thread.Name = $"[{threadNamePrefix}] thread 1: locks A then B";
             thread.Start();
 
             thread = new Thread(() =>
@@ -83,7 +82,7 @@ public class DeadlockedWithThreadsScript : IStartOnlyScript<DeadlockedWithThread
                     }
                 }
             });
-            thread.Name = $"[{request.ThreadNamePrefix}] thread 2: locks B then A";
+            thread.Name = $"[{threadNamePrefix}] thread 2: locks B then A";
             thread.Start();
         }
 

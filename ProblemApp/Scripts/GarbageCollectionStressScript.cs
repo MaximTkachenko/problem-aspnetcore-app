@@ -1,6 +1,4 @@
-﻿using ProblemApp.Common;
-
-namespace ProblemApp.Scripts;
+﻿namespace ProblemApp.Scripts;
 
 public class GarbageCollectionStressRequest
 {

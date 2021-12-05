@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProblemApp", "ProblemApp\Pr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProblemApp.EndpointsGenerator", "ProblemApp.EndpointsGenerator\ProblemApp.EndpointsGenerator.csproj", "{062F7E36-693F-4645-985B-2BCE927F5576}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProblemApp.Common", "ProblemApp.Common\ProblemApp.Common.csproj", "{1BF5C778-FA5D-4A74-B530-A25A33F8A041}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{188D5708-5239-47FE-9949-629A682E6F69}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -28,10 +26,6 @@ Global
 		{062F7E36-693F-4645-985B-2BCE927F5576}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{062F7E36-693F-4645-985B-2BCE927F5576}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{062F7E36-693F-4645-985B-2BCE927F5576}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1BF5C778-FA5D-4A74-B530-A25A33F8A041}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1BF5C778-FA5D-4A74-B530-A25A33F8A041}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1BF5C778-FA5D-4A74-B530-A25A33F8A041}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1BF5C778-FA5D-4A74-B530-A25A33F8A041}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

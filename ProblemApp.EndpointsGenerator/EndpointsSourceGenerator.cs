@@ -12,8 +12,8 @@ namespace ProblemApp.EndpointsGenerator
         public void Execute(GeneratorExecutionContext context)
         {
             var compilation = context.Compilation;
-            var startOnlyScriptType = compilation.GetTypeByMetadataName("ProblemApp.Common.IStartOnlyScript`1");
-            var scriptType = compilation.GetTypeByMetadataName("ProblemApp.Common.IScript`1");
+            var startOnlyScriptType = compilation.GetTypeByMetadataName("ProblemApp.Scripts.IStartOnlyScript`1");
+            var scriptType = compilation.GetTypeByMetadataName("ProblemApp.Scripts.IScript`1");
 
             var code = new StringBuilder(@"
 using System;
