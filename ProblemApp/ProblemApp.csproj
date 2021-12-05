@@ -13,4 +13,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ProblemApp.Common\ProblemApp.Common.csproj" />
+    <ProjectReference Include="..\ProblemApp.EndpointsGenerator\ProblemApp.EndpointsGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
 </Project>

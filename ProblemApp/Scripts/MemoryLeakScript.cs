@@ -1,4 +1,6 @@
-﻿namespace ProblemApp.Scripts;
+﻿using ProblemApp.Common;
+
+namespace ProblemApp.Scripts;
 
 public sealed class MemoryLeakScriptRequest
 {
