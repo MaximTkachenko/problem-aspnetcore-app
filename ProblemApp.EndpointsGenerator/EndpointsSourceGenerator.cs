@@ -76,6 +76,7 @@ namespace ProblemApp.Controllers
         }}");
                 }
             }
+
             code.Append(@"
     }
 }");

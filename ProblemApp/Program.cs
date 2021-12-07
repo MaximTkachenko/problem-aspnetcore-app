@@ -7,10 +7,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddSingleton<GarbageCollectionStressScript>();
-builder.Services.AddSingleton<DeadlockOnThreadPoolScript>();
-builder.Services.AddSingleton<DeadlockedWithThreadsScript>();
-builder.Services.AddSingleton<MemoryLeakScript>();
+builder.Services.Scan(scan => scan
+    .FromAssemblyOf<MemoryLeakScript>()
+        .AddClasses(classes => classes.AssignableTo(typeof(IScript<>)))
+            .AsSelf()
+            .WithSingletonLifetime()
+        .AddClasses(classes => classes.AssignableTo(typeof(IStartOnlyScript<>)))
+            .AsSelf()
+            .WithSingletonLifetime());
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
