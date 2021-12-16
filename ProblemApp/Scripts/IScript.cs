@@ -2,6 +2,6 @@
 
 public interface IScript<TRequestToStart>
 {
-    Task<bool> StartAsync(TRequestToStart requestToStart);
+    Task<bool> StartAsync(TRequestToStart request);
     Task<bool> StopAsync();
 }

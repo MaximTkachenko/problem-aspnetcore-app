@@ -8,6 +8,9 @@ public class DeadlockOnThreadPoolRequest
     public uint Count { get; set; }
 }
 
+/// <summary>
+/// https://docs.microsoft.com/en-us/dotnet/core/diagnostics/debug-deadlock?tabs=windows
+/// </summary>
 public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolRequest>
 {
     private readonly object _lockB = new object();

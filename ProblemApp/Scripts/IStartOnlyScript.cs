@@ -2,5 +2,5 @@
 
 public interface IStartOnlyScript<TRequestToStart>
 {
-    Task<bool> StartAsync(TRequestToStart requestToStart);
+    Task<bool> StartAsync(TRequestToStart request);
 }

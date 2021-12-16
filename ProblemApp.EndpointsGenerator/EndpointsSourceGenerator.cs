@@ -22,7 +22,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ProblemApp.Controllers
 {
-    public partial class ScriptsController
+    [ApiController]
+    [Route(""[controller]"")]
+    public class ScriptsController : ControllerBase
     {");
 
             foreach (var syntaxTree in compilation.SyntaxTrees)

@@ -8,6 +8,7 @@ public sealed class MemoryLeakScriptRequest
 /// <summary>
 /// https://www.youtube.com/watch?v=SHGeE_PFA4s
 /// https://docs.microsoft.com/en-us/dotnet/core/diagnostics/debug-memory-leak
+/// https://www.tessferrandez.com/blog/2021/03/18/debugging-a-netcore-memory-issue-with-dotnet-dump.html
 /// </summary>
 public class MemoryLeakScript : IScript<MemoryLeakScriptRequest>
 {
