@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 
 namespace ProblemApp.Controllers;
 
@@ -15,7 +14,7 @@ public class InfoController : ControllerBase
     {
         return Ok(new
         {
-            ProcessId = Process.GetCurrentProcess().Id,
+            ProcessId = Environment.ProcessId,
             OSVersion = Environment.OSVersion.ToString(),
             DotnetRuntimeVersion = Environment.Version.ToString()
         });

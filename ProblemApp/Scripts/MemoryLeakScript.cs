@@ -18,6 +18,7 @@ public class MemoryLeakScript : IScript<MemoryLeakScriptRequest>
     private Task _leakTask;
 
     public const string Action = "memory-leak";
+    public const string Description = "";
 
     public async Task<bool> StartAsync(MemoryLeakScriptRequest requestToStart)
     {

@@ -23,7 +23,7 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
-        Title = "PropblemApp",
+        Title = nameof(ProblemApp),
         Description = "ASP.NET Core application to emulate different problems like thread starvation, deadlocks, memory leaks etc.",
     });
 

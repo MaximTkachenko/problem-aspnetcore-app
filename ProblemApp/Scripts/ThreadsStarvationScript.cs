@@ -6,4 +6,6 @@
 /// </summary>
 public class ThreadsStarvationScript
 {
+    public const string Action = "";
+    public const string Description = "";
 }

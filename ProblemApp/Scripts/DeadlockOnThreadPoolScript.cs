@@ -18,6 +18,7 @@ public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolR
     private ConcurrentBag<Task> _tasks = new ConcurrentBag<Task>();
 
     public const string Action = "deadlock-on-threadpool";
+    public const string Description = "";
 
     public Task<bool> StartAsync(DeadlockOnThreadPoolRequest request)
     {

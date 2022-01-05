@@ -15,6 +15,7 @@ public class DeadlockedWithThreadsScript : IStartOnlyScript<DeadlockedWithThread
     private readonly object _lockA = new object();
 
     public const string Action = "deadlock-on-threads";
+    public const string Description = "";
 
     public Task<bool> StartAsync(DeadlockedWithThreadsRequest request)
     {

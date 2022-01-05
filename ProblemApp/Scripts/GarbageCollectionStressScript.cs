@@ -19,6 +19,7 @@ public class GarbageCollectionStressScript : IScript<GarbageCollectionStressRequ
     private object[] _objects;
 
     public const string Action = "gc-stress";
+    public const string Description = "";
 
     public async Task<bool> StartAsync(GarbageCollectionStressRequest request)
     {
