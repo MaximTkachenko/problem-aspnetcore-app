@@ -1,6 +1,6 @@
 ﻿namespace ProblemApp.Scripts;
 
-public class DeadlockOnThreadPoolRequest
+public class DeadlockOnDedicatedThreadsRequest
 {
     public long LockTimeoutInMs { get; set; }
     public uint Count { get; set; }
@@ -9,17 +9,17 @@ public class DeadlockOnThreadPoolRequest
 /// <summary>
 /// https://docs.microsoft.com/en-us/dotnet/core/diagnostics/debug-deadlock?tabs=windows
 /// </summary>
-public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolRequest>
+public class DeadlockOnDedicatedThreadsScript : IStartOnlyScript<DeadlockOnDedicatedThreadsRequest>
 {
-    private readonly SemaphoreSlim _deadlockOnThreadPoolSemaphore = new SemaphoreSlim(1, 1);
+    private readonly SemaphoreSlim _deadlockOnDedicatedThreadsSemaphore = new SemaphoreSlim(1, 1);
     private readonly object _lockB = new object();
     private readonly object _lockA = new object();
-    private readonly List<Task> _tasks = new List<Task>();
+    private readonly List<Thread> _threads = new List<Thread>();
 
-    public const string Action = "deadlock-on-threadpool";
+    public const string Action = "deadlock-on-dedicated-threads";
     public const string Description = "";
 
-    public async Task<bool> StartAsync(DeadlockOnThreadPoolRequest request)
+    public async Task<bool> StartAsync(DeadlockOnDedicatedThreadsRequest request)
     {
         request.LockTimeoutInMs = request.LockTimeoutInMs == default
             ? 30000
@@ -28,17 +28,18 @@ public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolR
             ? 1
             : request.Count;
 
-        await _deadlockOnThreadPoolSemaphore.WaitAsync();
+        await _deadlockOnDedicatedThreadsSemaphore.WaitAsync();
 
         try
         {
-            if (_tasks.Count > 0 && _tasks.Any(t => !t.IsCompleted)) return false;
+            if (_threads.Count > 0 && _threads.Any(th => th.ThreadState != ThreadState.Stopped)) return false;
 
-            _tasks.Clear();
+            _threads.Clear();
+            var threadNamePrefix = Guid.NewGuid().ToString();
 
             for (var i = 0; i < request.Count; i++)
             {
-                _tasks.Add(Task.Run(() =>
+                var thread1 = new Thread(() =>
                 {
                     if (Monitor.TryEnter(_lockA))
                     {
@@ -63,9 +64,12 @@ public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolR
                             Monitor.Exit(_lockA);
                         }
                     }
-                }));
+                });
+                thread1.Name = $"[{threadNamePrefix}#{i}] thread 1: locks A then B";
+                thread1.Start();
+                _threads.Add(thread1);
 
-                _tasks.Add(Task.Run(() =>
+                var thread2 = new Thread(() =>
                 {
                     if (Monitor.TryEnter(_lockB))
                     {
@@ -88,12 +92,15 @@ public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolR
                             Monitor.Exit(_lockB);
                         }
                     }
-                }));
+                });
+                thread2.Name = $"[{threadNamePrefix}#{i}] thread 2: locks B then A";
+                thread2.Start();
+                _threads.Add(thread2);
             }
         }
         finally
         {
-            _deadlockOnThreadPoolSemaphore.Release();
+            _deadlockOnDedicatedThreadsSemaphore.Release();
         }
 
         return true;

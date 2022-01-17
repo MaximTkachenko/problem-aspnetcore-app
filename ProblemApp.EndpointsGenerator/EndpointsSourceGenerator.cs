@@ -45,8 +45,8 @@ namespace ProblemApp.Controllers
         [HttpPost({startOnlyScript.Name}.Action)]
         public async Task<IActionResult> Execute{startOnlyScript.Name}Async({startOnlyScript.AllInterfaces[0].TypeArguments[0].Name} request)
         {{
-            await HttpContext.RequestServices.GetRequiredService<{startOnlyScript.Name}>().StartAsync(request);
-            return Ok(""Started"");
+            var started = await HttpContext.RequestServices.GetRequiredService<{startOnlyScript.Name}>().StartAsync(request);
+            return Ok(started ? ""Started"" : ""Already started"");
         }}");
                 }
 
