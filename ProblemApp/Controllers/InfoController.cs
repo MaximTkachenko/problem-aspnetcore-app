@@ -10,13 +10,10 @@ public class InfoController : ControllerBase
     /// Get application info.
     /// </summary>
     [HttpGet]
-    public IActionResult Index()
-    {
-        return Ok(new
+    public IActionResult Index() => Ok(new
         {
             ProcessId = Environment.ProcessId,
             OSVersion = Environment.OSVersion.ToString(),
             DotnetRuntimeVersion = Environment.Version.ToString()
         });
-    }
 }

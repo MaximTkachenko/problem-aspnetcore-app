@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace ProblemApp.Scripts;
 
@@ -10,7 +9,7 @@ public class NativeMemoryLeakScriptRequest
 
 public class NativeMemoryLeakScript : IScript<NativeMemoryLeakScriptRequest>
 {
-    private readonly ConcurrentBag<IntPtr> _handles = new ConcurrentBag<IntPtr>();
+    private readonly List<IntPtr> _handles = new List<IntPtr>();
     private readonly SemaphoreSlim _nativeMemoryLeakSemaphore = new SemaphoreSlim(1, 1);
     private Task _allocationTask;
     private CancellationTokenSource _nativeMemoryLeakTokenSource;
@@ -28,14 +27,14 @@ public class NativeMemoryLeakScript : IScript<NativeMemoryLeakScriptRequest>
 
         try
         {
-            if (_nativeMemoryLeakTokenSource != null) return false;
+            if (_allocationTask != null) return false;
 
             _nativeMemoryLeakTokenSource = new CancellationTokenSource();
             _handles.Clear();
 
             _allocationTask = Task.Run(() =>
             {
-                while (_nativeMemoryLeakTokenSource.Token.IsCancellationRequested)
+                while (!_nativeMemoryLeakTokenSource.Token.IsCancellationRequested)
                 {
                     _handles.Add(Marshal.AllocHGlobal(request.SizeInBytes));
                 }
@@ -55,7 +54,7 @@ public class NativeMemoryLeakScript : IScript<NativeMemoryLeakScriptRequest>
 
         try
         {
-            if (_nativeMemoryLeakTokenSource == null) return false;
+            if (_allocationTask == null) return false;
 
             _nativeMemoryLeakTokenSource.Cancel();
             await _allocationTask;
