@@ -20,11 +20,11 @@ public class MemoryLeakScript : IScript<MemoryLeakScriptRequest>
     public const string Action = "memory-leak";
     public const string Description = "";
 
-    public async Task<bool> StartAsync(MemoryLeakScriptRequest requestToStart)
+    public async Task<bool> StartAsync(MemoryLeakScriptRequest request)
     {
-        requestToStart.NumberOfObjects = requestToStart.NumberOfObjects == default
+        request.NumberOfObjects = request.NumberOfObjects == default
                ? 1024
-               : requestToStart.NumberOfObjects;
+               : request.NumberOfObjects;
 
         await _mlSemaphore.WaitAsync();
 
@@ -39,8 +39,8 @@ public class MemoryLeakScript : IScript<MemoryLeakScriptRequest>
                 var rnd = new Random();
                 while (!_cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    int idx = rnd.Next(requestToStart.NumberOfObjects);
-                    _objects.Add(new object[rnd.Next(requestToStart.NumberOfObjects)]);
+                    int idx = rnd.Next(request.NumberOfObjects);
+                    _objects.Add(new object[rnd.Next(request.NumberOfObjects)]);
                 }
             }, _cancellationTokenSource.Token);
         }
