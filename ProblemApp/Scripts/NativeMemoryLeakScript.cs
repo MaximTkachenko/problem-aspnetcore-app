@@ -4,7 +4,8 @@ namespace ProblemApp.Scripts;
 
 public class NativeMemoryLeakScriptRequest
 {
-    public int SizeInBytes { get; set; }
+    public int SizeInBytesPerIteration { get; set; }
+    public int PauseInMilliseconds { get; set; }
 }
 
 public class NativeMemoryLeakScript : IScript<NativeMemoryLeakScriptRequest>
@@ -19,9 +20,12 @@ public class NativeMemoryLeakScript : IScript<NativeMemoryLeakScriptRequest>
 
     public async Task<bool> StartAsync(NativeMemoryLeakScriptRequest request)
     {
-        request.SizeInBytes = request.SizeInBytes == default
+        request.SizeInBytesPerIteration = request.SizeInBytesPerIteration == default
             ? 10 * 1024 * 1024
-            : request.SizeInBytes;
+            : request.SizeInBytesPerIteration;
+        request.PauseInMilliseconds = request.PauseInMilliseconds == default
+            ? 5000
+            : request.PauseInMilliseconds;
 
         await _nativeMemoryLeakSemaphore.WaitAsync();
 
@@ -32,11 +36,13 @@ public class NativeMemoryLeakScript : IScript<NativeMemoryLeakScriptRequest>
             _nativeMemoryLeakTokenSource = new CancellationTokenSource();
             _handles.Clear();
 
-            _allocationTask = Task.Run(() =>
+            _allocationTask = Task.Run(async () =>
             {
                 while (!_nativeMemoryLeakTokenSource.Token.IsCancellationRequested)
                 {
-                    _handles.Add(Marshal.AllocHGlobal(request.SizeInBytes));
+                    _handles.Add(Marshal.AllocHGlobal(request.SizeInBytesPerIteration));
+
+                    await Task.Delay(TimeSpan.FromMilliseconds(request.PauseInMilliseconds));
                 }
             });
         }
