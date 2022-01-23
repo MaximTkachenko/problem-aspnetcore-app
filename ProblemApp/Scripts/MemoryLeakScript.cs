@@ -12,7 +12,7 @@ public sealed class MemoryLeakScriptRequest
 /// </summary>
 public class MemoryLeakScript : IScript<MemoryLeakScriptRequest>
 {
-    private readonly SemaphoreSlim _mlSemaphore = new SemaphoreSlim(1, 1);
+    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
     private List<object[]> _objects;
     private CancellationTokenSource _cancellationTokenSource;
     private Task _leakTask;
@@ -26,7 +26,7 @@ public class MemoryLeakScript : IScript<MemoryLeakScriptRequest>
                ? 1024
                : request.NumberOfObjects;
 
-        await _mlSemaphore.WaitAsync();
+        await _semaphore.WaitAsync();
 
         try
         {
@@ -46,7 +46,7 @@ public class MemoryLeakScript : IScript<MemoryLeakScriptRequest>
         }
         finally
         {
-            _mlSemaphore.Release();
+            _semaphore.Release();
         }
 
         return true;
@@ -54,7 +54,7 @@ public class MemoryLeakScript : IScript<MemoryLeakScriptRequest>
 
     public async Task<bool> StopAsync()
     {
-        await _mlSemaphore.WaitAsync();
+        await _semaphore.WaitAsync();
         try
         {
             if (_objects == null) return false;
@@ -72,7 +72,7 @@ public class MemoryLeakScript : IScript<MemoryLeakScriptRequest>
         }
         finally
         {
-            _mlSemaphore.Release();
+            _semaphore.Release();
         }
 
         return true;

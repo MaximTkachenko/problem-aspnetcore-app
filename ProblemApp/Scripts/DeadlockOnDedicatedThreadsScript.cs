@@ -11,7 +11,7 @@ public class DeadlockOnDedicatedThreadsRequest
 /// </summary>
 public class DeadlockOnDedicatedThreadsScript : IStartOnlyScript<DeadlockOnDedicatedThreadsRequest>
 {
-    private readonly SemaphoreSlim _deadlockOnDedicatedThreadsSemaphore = new SemaphoreSlim(1, 1);
+    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
     private readonly object _lockB = new object();
     private readonly object _lockA = new object();
     private readonly List<Thread> _threads = new List<Thread>();
@@ -28,7 +28,7 @@ public class DeadlockOnDedicatedThreadsScript : IStartOnlyScript<DeadlockOnDedic
             ? 1
             : request.Count;
 
-        await _deadlockOnDedicatedThreadsSemaphore.WaitAsync();
+        await _semaphore.WaitAsync();
 
         try
         {
@@ -100,7 +100,7 @@ public class DeadlockOnDedicatedThreadsScript : IStartOnlyScript<DeadlockOnDedic
         }
         finally
         {
-            _deadlockOnDedicatedThreadsSemaphore.Release();
+            _semaphore.Release();
         }
 
         return true;

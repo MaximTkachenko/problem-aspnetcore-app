@@ -11,7 +11,7 @@ public class DeadlockOnThreadPoolRequest
 /// </summary>
 public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolRequest>
 {
-    private readonly SemaphoreSlim _deadlockOnThreadPoolSemaphore = new SemaphoreSlim(1, 1);
+    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
     private readonly object _lockB = new object();
     private readonly object _lockA = new object();
     private readonly List<Task> _tasks = new List<Task>();
@@ -28,7 +28,7 @@ public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolR
             ? 1
             : request.Count;
 
-        await _deadlockOnThreadPoolSemaphore.WaitAsync();
+        await _semaphore.WaitAsync();
 
         try
         {
@@ -93,7 +93,7 @@ public class DeadlockOnThreadPoolScript : IStartOnlyScript<DeadlockOnThreadPoolR
         }
         finally
         {
-            _deadlockOnThreadPoolSemaphore.Release();
+            _semaphore.Release();
         }
 
         return true;

@@ -12,10 +12,10 @@ public class GarbageCollectionStressRequest
 /// </summary>
 public class GarbageCollectionStressScript : IScript<GarbageCollectionStressRequest>
 {
-    private readonly SemaphoreSlim _gcStressSemaphore = new SemaphoreSlim(1, 1);
+    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
     private Task _allocationTask;
     private Task _gcCollectionTask;
-    private CancellationTokenSource _gcStressCancellationTokenSource;
+    private CancellationTokenSource _cancellationTokenSource;
     private object[] _objects;
 
     public const string Action = "gc-stress";
@@ -30,36 +30,36 @@ public class GarbageCollectionStressScript : IScript<GarbageCollectionStressRequ
             ? 1024
             : request.NumberOfObjects;
 
-        await _gcStressSemaphore.WaitAsync();
+        await _semaphore.WaitAsync();
 
         try
         {
             if (_objects != null) return false;
 
             _objects = new object[request.NumberOfObjects];
-            _gcStressCancellationTokenSource = new CancellationTokenSource();
+            _cancellationTokenSource = new CancellationTokenSource();
             _allocationTask = Task.Run(() =>
             {
                 var rnd = new Random();
-                while (!_gcStressCancellationTokenSource.Token.IsCancellationRequested)
+                while (!_cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     int idx = rnd.Next(request.NumberOfObjects);
                     _objects[idx] = new object[rnd.Next(request.NumberOfObjects)];
                 }
-            }, _gcStressCancellationTokenSource.Token);
+            }, _cancellationTokenSource.Token);
 
             _gcCollectionTask = Task.Run(async () =>
             {
                 var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(request.GarbageCollectionCallPeriodInMs));
-                while(await timer.WaitForNextTickAsync(_gcStressCancellationTokenSource.Token))
+                while(await timer.WaitForNextTickAsync(_cancellationTokenSource.Token))
                 {
                     GC.Collect();
                 }
-            }, _gcStressCancellationTokenSource.Token);
+            }, _cancellationTokenSource.Token);
         }
         finally
         {
-            _gcStressSemaphore.Release();
+            _semaphore.Release();
         }
 
         return true;
@@ -67,12 +67,12 @@ public class GarbageCollectionStressScript : IScript<GarbageCollectionStressRequ
 
     public async Task<bool> StopAsync()
     {
-        await _gcStressSemaphore.WaitAsync();
+        await _semaphore.WaitAsync();
         try
         {
             if (_objects == null) return false;
 
-            _gcStressCancellationTokenSource.Cancel();
+            _cancellationTokenSource.Cancel();
 
             try
             {
@@ -81,13 +81,13 @@ public class GarbageCollectionStressScript : IScript<GarbageCollectionStressRequ
             catch(OperationCanceledException) { }
 
             _objects = null;
-            _gcStressCancellationTokenSource = null;
+            _cancellationTokenSource = null;
             _allocationTask = null;
             _gcCollectionTask = null;
         }
         finally
         {
-            _gcStressSemaphore.Release();
+            _semaphore.Release();
         }
 
         return true;

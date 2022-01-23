@@ -11,7 +11,7 @@ public class DeadlockOnTasksRequest
 /// </summary>
 public class DeadlockOnTasksScript : IStartOnlyScript<DeadlockOnTasksRequest>
 {
-    private readonly SemaphoreSlim _deadlockOnTasksSemaphore = new SemaphoreSlim(1, 1);
+    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
     private readonly List<Task> _tasks = new List<Task>();
 
     public const string Action = "deadlock-on-tasks";
@@ -26,7 +26,7 @@ public class DeadlockOnTasksScript : IStartOnlyScript<DeadlockOnTasksRequest>
             ? 1
             : request.Count;
 
-        await _deadlockOnTasksSemaphore.WaitAsync();
+        await _semaphore.WaitAsync();
 
         try
         {
@@ -62,7 +62,7 @@ public class DeadlockOnTasksScript : IStartOnlyScript<DeadlockOnTasksRequest>
         }
         finally
         {
-            _deadlockOnTasksSemaphore.Release();
+            _semaphore.Release();
         }
 
         return true;

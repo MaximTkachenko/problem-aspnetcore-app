@@ -11,9 +11,9 @@ public class NativeMemoryLeakScriptRequest
 public class NativeMemoryLeakScript : IScript<NativeMemoryLeakScriptRequest>
 {
     private readonly List<IntPtr> _handles = new List<IntPtr>();
-    private readonly SemaphoreSlim _nativeMemoryLeakSemaphore = new SemaphoreSlim(1, 1);
+    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
     private Task _allocationTask;
-    private CancellationTokenSource _nativeMemoryLeakTokenSource;
+    private CancellationTokenSource _cancellationTokenSource;
 
     public const string Action = "native-memory-leak";
     public const string Description = "";
@@ -27,18 +27,18 @@ public class NativeMemoryLeakScript : IScript<NativeMemoryLeakScriptRequest>
             ? 5000
             : request.PauseInMilliseconds;
 
-        await _nativeMemoryLeakSemaphore.WaitAsync();
+        await _semaphore.WaitAsync();
 
         try
         {
             if (_allocationTask != null) return false;
 
-            _nativeMemoryLeakTokenSource = new CancellationTokenSource();
+            _cancellationTokenSource = new CancellationTokenSource();
             _handles.Clear();
 
             _allocationTask = Task.Run(async () =>
             {
-                while (!_nativeMemoryLeakTokenSource.Token.IsCancellationRequested)
+                while (!_cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     _handles.Add(Marshal.AllocHGlobal(request.SizeInBytesPerIteration));
 
@@ -48,7 +48,7 @@ public class NativeMemoryLeakScript : IScript<NativeMemoryLeakScriptRequest>
         }
         finally
         {
-            _nativeMemoryLeakSemaphore.Release();
+            _semaphore.Release();
         }
 
         return true;
@@ -56,13 +56,13 @@ public class NativeMemoryLeakScript : IScript<NativeMemoryLeakScriptRequest>
 
     public async Task<bool> StopAsync()
     {
-        await _nativeMemoryLeakSemaphore.WaitAsync();
+        await _semaphore.WaitAsync();
 
         try
         {
             if (_allocationTask == null) return false;
 
-            _nativeMemoryLeakTokenSource.Cancel();
+            _cancellationTokenSource.Cancel();
             await _allocationTask;
 
             foreach (var handle in _handles)
@@ -70,12 +70,12 @@ public class NativeMemoryLeakScript : IScript<NativeMemoryLeakScriptRequest>
                 Marshal.FreeHGlobal(handle);
             }
 
-            _nativeMemoryLeakTokenSource = null;
+            _cancellationTokenSource = null;
             _allocationTask = null;
         }
         finally
         {
-            _nativeMemoryLeakSemaphore.Release();
+            _semaphore.Release();
         }
 
         return true;
