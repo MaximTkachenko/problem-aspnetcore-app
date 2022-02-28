@@ -4,6 +4,7 @@ public class ThreadPoolStarvationWithHttpCallScriptRequest
 {
     public int DelayInMilliseconds { get; set; }
     public int OperationsPerIteration { get; set; }
+    public bool Async { get; set; }
 }
 
 /// <summary>
@@ -50,11 +51,18 @@ public class ThreadPoolStarvationWithHttpCallScript : IScript<ThreadPoolStarvati
                 {
                     for (int i = 0; i < request.OperationsPerIteration; i++)
                     {
-                        _tasks.Add(Task.Run(() =>
-                        {
-                            _http.CreateClient().GetStringAsync(@$"https://deelay.me/{request.DelayInMilliseconds}/https://mtkachenko.me", _cancellationTokenSource.Token)
-                                .Wait(_cancellationTokenSource.Token);
-                        }, _cancellationTokenSource.Token));
+                        var task = request.Async
+                            ? Task.Run(() =>
+                                {
+                                    _http.CreateClient().GetStringAsync(@$"https://deelay.me/{request.DelayInMilliseconds}/https://mtkachenko.me", _cancellationTokenSource.Token);
+                                })
+                            : Task.Run(() =>
+                            {
+                                _http.CreateClient().GetStringAsync(@$"https://deelay.me/{request.DelayInMilliseconds}/https://mtkachenko.me", _cancellationTokenSource.Token)
+                                    //block thread
+                                    .Wait(_cancellationTokenSource.Token);
+                            });
+                         _tasks.Add(task);
                     }
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
